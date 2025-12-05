@@ -1,0 +1,9 @@
+[project]
+name = "z-ai-llm-proxy"
+version = "0.1.0"
+description = "LiteLLM proxy server for Z.AI API integration with GitHub Copilot"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "litellm[proxy]>=1.80.7",
+]

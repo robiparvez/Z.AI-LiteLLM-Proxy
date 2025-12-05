@@ -1,0 +1,39 @@
+model_list:
+  # Z.AI GLM Models - https://docs.litellm.ai/docs/providers/zai
+  # API Endpoint: https://api.z.ai/api/coding/paas/v4/ (base URL for chat completions)
+  - model_name: glm-4.6
+    litellm_params:
+      model: glm-4.6
+      api_base: https://api.z.ai/api/coding/paas/v4/
+      api_key: os.environ/ZAI_API_KEY
+      custom_llm_provider: openai
+      max_tokens: 4096
+
+  - model_name: glm-4.5
+    litellm_params:
+      model: glm-4.5
+      api_base: https://api.z.ai/api/coding/paas/v4/
+      api_key: os.environ/ZAI_API_KEY
+      custom_llm_provider: openai
+      max_tokens: 4096
+
+  - model_name: glm-4.5-flash
+    litellm_params:
+      model: glm-4.5-flash
+      api_base: https://api.z.ai/api/coding/paas/v4/
+      api_key: os.environ/ZAI_API_KEY
+      custom_llm_provider: openai
+      max_tokens: 4096
+
+  - model_name: glm-4.5-air
+    litellm_params:
+      model: glm-4.5-air
+      api_base: https://api.z.ai/api/coding/paas/v4/
+      api_key: os.environ/ZAI_API_KEY
+      custom_llm_provider: openai
+      max_tokens: 4096
+
+litellm_settings:
+  drop_params: true
+  success_callback: []
+  failure_callback: []
