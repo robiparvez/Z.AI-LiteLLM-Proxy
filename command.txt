@@ -1,0 +1,12 @@
+# Windows (Git Bash/MSYS):
+./start_proxy.bat
+
+# Windows (PowerShell):
+.\start_proxy.bat
+
+# Linux/macOS:
+./start_proxy.sh
+
+# Manual (if you need to set env vars manually):
+# First set the API key, then run:
+# uvx --from 'litellm[proxy]' litellm --config z_ai_config.yaml --port 4000

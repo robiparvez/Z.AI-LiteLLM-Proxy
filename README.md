@@ -2,14 +2,15 @@
 
 ## Overview
 
-This guide will help you set up a LiteLLM proxy server to bridge z.ai's API with GitHub Copilot LLM Gateway's OpenAI-compatible format.
+This guide will help you set up a complete LiteLLM proxy server to bridge z.ai's API with GitHub Copilot LLM Gateway's OpenAI-compatible format. This project provides a production-ready solution with automated startup scripts, secure configuration management, and support for multiple Z.AI GLM models.
 
 ## Prerequisites
 
 - ✅ UV package manager installed
-- ✅ LiteLLM installed
+- ✅ LiteLLM installed (v1.80.7+ recommended)
 - Z.AI API key from <https://z.ai/model-api>
 - VS Code with GitHub Copilot and GitHub Copilot LLM Gateway extensions
+- Python 3.11+ (specified in .python-version)
 
 ## 🔗 API Configuration
 
@@ -47,23 +48,52 @@ cp .env.example .env
 # Edit .env and replace "your-actual-api-key-here" with your actual API key
 ```
 
-### 2. Set Up Environment (Optional)
+### 2. Set Up Environment
 
-For convenience, you can create a `.env` file:
+Create a `.env` file with your API key:
 
 ```bash
 cp .env.example .env
 # Edit .env and replace "your-actual-api-key-here" with your actual API key
 ```
 
-The proxy will automatically load environment variables from the `.env` file.
-
 ### 3. Start the Proxy
 
-**Start the proxy manually:**
+**Recommended - Use the startup scripts (automatically loads .env file):**
+
+**Windows (Git Bash/Command Prompt):**
 
 ```bash
-uv run litellm --config z_ai_config.yaml --port 4000
+./start_proxy.bat
+```
+
+**Linux/macOS:**
+
+```bash
+chmod +x start_proxy.sh
+./start_proxy.sh
+```
+
+**Startup Script Features:**
+
+- **Automatic Environment Loading**: Scripts automatically load `.env` file
+- **Configuration Validation**: Verify API key is set before starting
+- **Error Handling**: Clear error messages for missing files or invalid configuration
+- **Secure Key Display**: Shows only first 10 characters of API key for verification
+
+**Alternative - Manual start (requires setting env vars first):**
+
+**Linux/macOS:**
+
+```bash
+source .env && uvx --from 'litellm[proxy]' litellm --config z_ai_config.yaml --port 4000
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Get-Content .env | ForEach-Object { if($_ -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process') } }
+uvx --from 'litellm[proxy]' litellm --config z_ai_config.yaml --port 4000
 ```
 
 You should see:
@@ -116,6 +146,13 @@ The following Z.AI GLM models are pre-configured in `z_ai_config.yaml`:
 - **glm-4.5-flash** - **FREE** tier model, 128K context
 - **glm-4.5-air** - Lightweight model, 128K context, $0.20/$1.10 per 1M tokens
 
+### Model Features
+
+- **Streaming Support**: All models support both streaming and non-streaming responses
+- **Context Length**: Models support up to 200K context window (glm-4.6)
+- **Token Limits**: Configurable max_tokens (default: 4096)
+- **OpenAI Compatible**: Full OpenAI API compatibility for seamless integration
+
 ### Other Available Z.AI Models
 
 You can add any of these to `z_ai_config.yaml`:
@@ -143,11 +180,38 @@ See [Z.AI LiteLLM Documentation](https://docs.litellm.ai/docs/providers/zai) for
 
 ## Configuration Files
 
-- **`z_ai_config.yaml`** - Main configuration file for LiteLLM proxy
-- **`main.py`** - Example script showing direct SDK usage
-- **`pyproject.toml`** - UV project configuration
-- **`.env.example`** - Environment variable template
-- **`.gitignore`** - Git ignore patterns
+- **`z_ai_config.yaml`** - Main configuration file for LiteLLM proxy with model definitions
+- **`main.py`** - Example script showing direct SDK usage with streaming support
+- **`pyproject.toml`** - UV project configuration with dependencies
+- **`.env.example`** - Environment variable template for API key
+- **`.gitignore`** - Git ignore patterns for version control
+- **`.python-version`** - Python version specification (3.11+)
+- **`start_proxy.bat`** - Windows startup script with environment loading
+- **`start_proxy.sh`** - Linux/macOS startup script with environment loading
+
+## Direct SDK Usage
+
+The project includes `main.py` as an example of direct LiteLLM SDK usage:
+
+```python
+import os
+from litellm import completion
+
+# Example with zai/ prefix for direct SDK usage
+response = completion(
+    model="zai/glm-4.6",
+    messages=[{"role": "user", "content": "Hello from LiteLLM!"}]
+)
+
+# Example with streaming
+response = completion(
+    model="zai/glm-4.5-flash",  # FREE tier
+    messages=[{"role": "user", "content": "Count from 1 to 5"}],
+    stream=True
+)
+```
+
+**Note**: For direct SDK usage, use the `zai/` prefix. For proxy usage, model names are used without the prefix.
 
 ## Troubleshooting
 
@@ -229,15 +293,48 @@ To reattach: `tmux attach -t litellm`
 ```plaintext
 z-ai-llm-proxy/
 ├── README.md              # This file
-├── z_ai_config.yaml       # LiteLLM configuration
-├── main.py                # Example usage script
-├── pyproject.toml         # UV project file
+├── z_ai_config.yaml       # LiteLLM configuration with model definitions
+├── main.py                # Example usage script with streaming support
+├── pyproject.toml         # UV project configuration
 ├── uv.lock                # Dependency lock file
 ├── .env.example           # Environment variable template
 ├── .gitignore             # Git ignore patterns
-├── .python-version        # Python version specification
+├── .python-version        # Python version specification (3.11+)
+├── start_proxy.bat        # Windows startup script
+├── start_proxy.sh         # Linux/macOS startup script
+├── command.txt            # Quick command reference
 └── .venv/                 # Virtual environment (auto-created)
 ```
+
+## Key Features
+
+### 🚀 Production Ready
+
+- **Automated Startup Scripts**: Cross-platform scripts with environment validation
+- **Secure Configuration**: Environment variable-based API key management
+- **Error Handling**: Comprehensive validation and error messages
+- **Multi-Platform Support**: Windows, Linux, and macOS compatibility
+
+### 🔒 Security Features
+
+- **Environment Protection**: API keys never exposed in source code
+- **Input Validation**: Startup scripts verify configuration before launch
+- **Secure Defaults**: No hardcoded credentials, proper .gitignore setup
+- **Local Only**: Proxy runs locally, API key never leaves your machine
+
+### 🛠️ Development Features
+
+- **Modern Python**: Python 3.11+ requirement for latest features
+- **UV Package Manager**: Fast, reliable dependency management
+- **Complete Documentation**: Comprehensive setup and troubleshooting guides
+- **Example Code**: Working examples showing both proxy and direct SDK usage
+
+### 🔄 Integration Features
+
+- **GitHub Copilot Compatible**: OpenAI API format for seamless integration
+- **Multiple Models**: Support for 4 different GLM models with various capabilities
+- **Streaming Support**: Real-time response streaming for interactive applications
+- **Flexible Configuration**: Easy model addition and customization
 
 ## Next Steps
 
